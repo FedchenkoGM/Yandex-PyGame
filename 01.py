@@ -1,25 +1,63 @@
+import os
+
 import pygame
 
-def draw():
-    screen.fill((0, 0, 0))
-    font = pygame.font.Font(None, 50)
-    text = font.render("Hello, Pygame!", 1, (100, 255, 150))
-    text_x = width // 2 - text.get_width() // 2
-    text_y = height // 2 - text.get_height() // 2
-    text_w = text.get_width()
-    text_h = text.get_height()
-    screen.blit(text, (text_x, text_y))
-    pygame.draw.rect(screen, (0, 255, 0),
-                    (text_x - 10, text_y - 10, text_w + 20, text_h + 20), 1)
+
+def load_image(name, color_key=None):
+    fullname = os.path.join('data', name)
+    try:
+        image = pygame.image.load(fullname).convert()
+    except pygame.error as message:
+        print('Cannot load image:', name)
+        raise SystemExit(message)
+
+    if color_key is not None:
+        if color_key == -1:
+            color_key = image.get_at((0, 0))
+        image.set_colorkey(color_key)
+    else:
+        image = image.convert_alpha()
+    return image
 
 
-pygame.init()
-size = width, height = 800, 600
-screen = pygame.display.set_mode(size)
+def main():
+    size = 300, 300
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption('Герой двигается!')
 
-draw()
+    # группа, содержащая все спрайты
+    all_sprites = pygame.sprite.Group()
 
-pygame.display.flip()
-while pygame.event.wait().type != pygame.QUIT:
-    pass
-pygame.quit()
+    # изображение должно лежать в папке data
+    hero_image = load_image("creature.png")
+    hero = pygame.sprite.Sprite(all_sprites)
+    hero.image = hero_image
+    hero.rect = hero.image.get_rect()
+
+    # шаг перемещения
+    dist = 10
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            # Проверяем нажатые кнопки
+            key = pygame.key.get_pressed()
+            if key[pygame.K_DOWN]:
+                hero.rect.top += dist
+            elif key[pygame.K_UP]:
+                hero.rect.top -= dist
+            if key[pygame.K_RIGHT]:
+                hero.rect.left += dist
+            elif key[pygame.K_LEFT]:
+                hero.rect.left -= dist
+        screen.fill(pygame.Color("white"))
+        all_sprites.draw(screen)
+        pygame.display.flip()
+
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main()
