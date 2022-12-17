@@ -1,9 +1,10 @@
-import os
 import pygame
+import os
+import sys
+
 
 pygame.init()
-
-size = width, height = 800, 800
+size = width, height = 600, 400
 screen = pygame.display.set_mode(size)
 
 
@@ -23,6 +24,7 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
+
 class Mountain(pygame.sprite.Sprite):
     image = load_image("mountains.png")
 
@@ -30,47 +32,49 @@ class Mountain(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.image = Mountain.image
         self.rect = self.image.get_rect()
-        # РІС‹С‡РёСЃР»СЏРµРј РјР°СЃРєСѓ РґР»СЏ СЌС„С„РµРєС‚РёРІРЅРѕРіРѕ СЃСЂР°РІРЅРµРЅРёСЏ
+        # вычисляем маску для эффективного сравнения
         self.mask = pygame.mask.from_surface(self.image)
-        # СЂР°СЃРїРѕР»Р°РіР°РµРј РіРѕСЂС‹ РІРЅРёР·Сѓ
+        # располагаем горы внизу
         self.rect.bottom = height
 
-
 class Landing(pygame.sprite.Sprite):
-    image = load_image("star.png")
+    image = load_image("pt.png")
 
     def __init__(self, pos):
         super().__init__(all_sprites)
         self.image = Landing.image
         self.rect = self.image.get_rect()
-        # РІС‹С‡РёСЃР»СЏРµРј РјР°СЃРєСѓ РґР»СЏ СЌС„С„РµРєС‚РёРІРЅРѕРіРѕ СЃСЂР°РІРЅРµРЅРёСЏ
+        # вычисляем маску для эффективного сравнения
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = pos[0]
         self.rect.y = pos[1]
 
     def update(self):
-        # РµСЃР»Рё РµС‰Рµ РІ РЅРµР±Рµ
+        # если ещё в небе
         if not pygame.sprite.collide_mask(self, mountain):
             self.rect = self.rect.move(0, 1)
 
 
-# РіСЂСѓРїРїР°, СЃРѕРґРµСЂР¶Р°С‰Р°СЏ РІСЃРµ СЃРїСЂР°Р№С‚С‹
-all_sprites = pygame.sprite.Group()
+if __name__ == '__main__':
+    pygame.display.set_caption('Десант')
+    screen.fill((0, 0, 0))
+    clock = pygame.time.Clock()
+    all_sprites = pygame.sprite.Group()
+    mountain = Mountain()
 
-mountain = Mountain()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                Landing(event.pos)
 
-clock = pygame.time.Clock()
+        screen.fill((0, 0, 0))
+        all_sprites.update()
+        all_sprites.draw(screen)
+        pygame.display.flip()
+        clock.tick(50)
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            Landing(event.pos)
-    screen.fill(pygame.Color("black"))
-    all_sprites.draw(screen)
-    all_sprites.update()
-    pygame.display.flip()
-    clock.tick(50)
-pygame.quit()
+    pygame.quit()
+
